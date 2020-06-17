@@ -1,4 +1,9 @@
-export interface KubeObject {
+import { createRouteURL } from '../router';
+import { timeAgo } from '../util';
+import { useConnectApi } from './api';
+import { apiFactory, apiFactoryWithNamespace } from './apiProxy';
+
+export interface KubeObjectInterface {
   kind: string;
   apiVersion?: string;
   metadata: KubeMetadata;
@@ -18,6 +23,94 @@ export interface KubeMetadata {
   selfLink: string;
   labels?: StringDict;
   annotations?: StringDict;
+}
+
+export function makeKubeObject<T extends KubeObjectInterface>(detailsRouteName: string) {
+  class KubeObject {
+    static apiEndpoint: ReturnType<(typeof apiFactoryWithNamespace) | (typeof apiFactory)>;
+    jsonData: T | null = null;
+
+    constructor(json: T) {
+      this.jsonData = json;
+    }
+
+    get detailsRoute(): string {
+      return detailsRouteName;
+    }
+
+    get listRoute(): string {
+      return detailsRouteName + 's';
+    }
+
+    getDetailsLink() {
+      const params = {
+        namespace: this.getNamespace(),
+        name: this.getName(),
+      };
+      let link = createRouteURL(this.detailsRoute, params);
+      return link;
+    }
+
+    getName() {
+      return this.metadata.name;
+    }
+
+    getNamespace() {
+      return this.metadata.namespace;
+    }
+
+    getCreationTs() {
+      return this.metadata.creationTimestamp;
+    }
+
+    getAge() {
+      return timeAgo(this.getCreationTs());
+    }
+
+    get metadata() {
+      return this.jsonData!.metadata;
+    }
+
+    get kind() {
+      return this.jsonData!.kind;
+    }
+
+    static apiList<U extends KubeObject>(onList: (arg: U[]) => void) {
+      const createInstance = (item: T) => this.create(item) as U;
+      return this.apiEndpoint.list.bind(null, null,
+        (list: T[]) => onList(list.map((item: T) => createInstance(item) as U)));
+    }
+
+    static useApiList<U extends KubeObject>(onList: (...arg: any[]) => any) {
+      const listCallback = onList as (arg: U[]) => void;
+      useConnectApi(this.apiList(listCallback))
+    }
+
+    static create<U extends KubeObject>(this: new (arg: T) => U, item: T): U {
+      return (new this(item)) as U;
+    }
+
+    static apiGet<U extends KubeObject>(onGet: (...args: any) => void, name: string, namespace?: string) {
+      const createInstance = (item: T) => this.create(item) as U;
+      let args: any[] = [name, (obj: T) => onGet(createInstance(obj))];
+
+      if (!!namespace) {
+        args.unshift(namespace);
+        return this.apiEndpoint.get.bind(null, namespace, name, (obj: T) => onGet(createInstance(obj)));
+      }
+
+      return this.apiEndpoint.get.bind(null, name, (obj: T) => onGet(createInstance(obj)));
+    }
+
+    static useApiGet<U extends KubeObject>(onGet: (...args: any) => any, name: string, namespace?: string) {
+      // We do the type conversion here because we want to be able to use hooks that may not have
+      // the exact signature as get callbacks.
+      const getCallback = onGet as (item: U) => void;
+      useConnectApi(this.apiGet(getCallback, name, namespace))
+    }
+  }
+
+  return KubeObject;
 }
 
 export interface KubeCondition {
@@ -120,11 +213,11 @@ export interface KubeEvent {
   [otherProps: string]: any;
 }
 
-export interface KubeConfigMap extends KubeObject {
+export interface KubeConfigMap extends KubeObjectInterface {
   data: StringDict;
 }
 
-export interface KubeIngress extends KubeObject {
+export interface KubeIngress extends KubeObjectInterface {
   spec: {
     rules: {
       host: string;
@@ -152,7 +245,7 @@ interface LabelSelector {
   };
 }
 
-export interface KubeDaemonSet extends KubeObject {
+export interface KubeDaemonSet extends KubeObjectInterface {
   spec: {
     updateStrategy: {
       type: string;
@@ -165,13 +258,13 @@ export interface KubeDaemonSet extends KubeObject {
   };
 }
 
-export interface KubeNamespace extends KubeObject {
+export interface KubeNamespace extends KubeObjectInterface {
   status: {
     phase: string;
   };
 }
 
-export interface KubeNode extends KubeObject {
+export interface KubeNode extends KubeObjectInterface {
   status: {
     addresses: {
       address: string;
@@ -241,7 +334,7 @@ export interface KubeContainerStatus {
   };
 }
 
-export interface KubePod extends KubeObject {
+export interface KubePod extends KubeObjectInterface {
   spec: {
     containers: KubeContainer[];
   };
@@ -258,7 +351,7 @@ export interface KubePod extends KubeObject {
   };
 }
 
-export interface KubeReplicaSet extends KubeObject {
+export interface KubeReplicaSet extends KubeObjectInterface {
   spec: {
     minReadySeconds: number;
     replicas: number;
@@ -275,7 +368,7 @@ export interface KubeReplicaSet extends KubeObject {
   };
 }
 
-export interface KubeStatefulSet extends KubeObject {
+export interface KubeStatefulSet extends KubeObjectInterface {
   spec: {
     selector: LabelSelector;
     updateStrategy: {
@@ -288,7 +381,7 @@ export interface KubeStatefulSet extends KubeObject {
   };
 }
 
-export interface KubeSecretAccount extends KubeObject {
+export interface KubeSecretAccount extends KubeObjectInterface {
   secrets: {
     apiVersion: string;
     fieldPath: string;
@@ -299,11 +392,11 @@ export interface KubeSecretAccount extends KubeObject {
   }[];
 }
 
-export interface KubeSecret extends KubeObject {
+export interface KubeSecret extends KubeObjectInterface {
   data: StringDict;
 }
 
-export interface KubeService extends KubeObject {
+export interface KubeService extends KubeObjectInterface {
   spec: {
     clusterIP: string;
     ports: {
@@ -318,7 +411,7 @@ export interface KubeService extends KubeObject {
   };
 }
 
-export type KubeWorkload = KubeReplicaSet | KubeStatefulSet | (KubeObject & {
+export type KubeWorkload = KubeReplicaSet | KubeStatefulSet | (KubeObjectInterface & {
   spec: {
     selector?: LabelSelector;
     strategy?: {
@@ -329,7 +422,7 @@ export type KubeWorkload = KubeReplicaSet | KubeStatefulSet | (KubeObject & {
   };
 });
 
-export interface KubeCRD extends KubeObject {
+export interface KubeCRD extends KubeObjectInterface {
   spec: {
     group: string;
     version: string;
@@ -343,7 +436,7 @@ export interface KubeCRD extends KubeObject {
   };
 }
 
-export interface KubeRole extends KubeObject {
+export interface KubeRole extends KubeObjectInterface {
   rules: {
     apiGroups: string[];
     nonResourceURLs: string[];
@@ -353,7 +446,7 @@ export interface KubeRole extends KubeObject {
   };
 }
 
-export interface KubeRoleBinding extends KubeObject {
+export interface KubeRoleBinding extends KubeObjectInterface {
   roleRef: {
     apiGroup: string;
     kind: string;
@@ -361,7 +454,7 @@ export interface KubeRoleBinding extends KubeObject {
   };
 }
 
-export interface KubePersistentVolume extends KubeObject {
+export interface KubePersistentVolume extends KubeObjectInterface {
   spec: {
     capacity: {
       storage: string;
@@ -375,7 +468,7 @@ export interface KubePersistentVolume extends KubeObject {
   };
 }
 
-export interface KubePersistentVolumeClaim extends KubeObject {
+export interface KubePersistentVolumeClaim extends KubeObjectInterface {
   spec: {
     accessModes: string[];
     resources: {
@@ -398,7 +491,7 @@ export interface KubePersistentVolumeClaim extends KubeObject {
   };
 }
 
-export interface KubeStorageClass extends KubeObject {
+export interface KubeStorageClass extends KubeObjectInterface {
   provisioner: string;
   reclaimPolicy: string;
   volumeBindingMode: string;
