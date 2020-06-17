@@ -1,4 +1,3 @@
-import 'xterm/css/xterm.css';
 import Button from '@material-ui/core/Button';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -12,8 +11,9 @@ import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import { Terminal as XTerminal } from 'xterm';
-import api from '../../lib/api';
-import { KubeContainer, KubeObject } from '../../lib/cluster';
+import 'xterm/css/xterm.css';
+import api from '../../lib/k8s/api';
+import { KubeContainer, KubeObject } from '../../lib/k8s/cluster';
 
 const decoder = new TextDecoder('utf-8');
 const encoder = new TextEncoder();
