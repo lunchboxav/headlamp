@@ -96,10 +96,9 @@ export function makeKubeObject<T extends KubeObjectInterface>(detailsRouteName: 
 
       if (!!namespace) {
         args.unshift(namespace);
-        return this.apiEndpoint.get.bind(null, namespace, name, (obj: T) => onGet(createInstance(obj)));
       }
 
-      return this.apiEndpoint.get.bind(null, name, (obj: T) => onGet(createInstance(obj)));
+      return this.apiEndpoint.get.bind(null, ...args);
     }
 
     static useApiGet<U extends KubeObject>(onGet: (...args: any) => any, name: string, namespace?: string) {
