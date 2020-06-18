@@ -40,7 +40,7 @@ export function makeKubeObject<T extends KubeObjectInterface>(detailsRouteName: 
     }
 
     get listRoute(): string {
-      return detailsRouteName + 's';
+      return this.detailsRoute + 's';
     }
 
     getDetailsLink() {
