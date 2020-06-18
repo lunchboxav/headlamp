@@ -325,14 +325,6 @@ export interface KubeCRD extends KubeObjectInterface {
   };
 }
 
-export interface KubeRoleBinding extends KubeObjectInterface {
-  roleRef: {
-    apiGroup: string;
-    kind: string;
-    name: string;
-  };
-}
-
 export interface KubePersistentVolume extends KubeObjectInterface {
   spec: {
     capacity: {
