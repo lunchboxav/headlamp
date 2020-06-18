@@ -1,7 +1,12 @@
 import Grid from '@material-ui/core/Grid';
 import React from 'react';
-import api, { useConnectApi } from '../../lib/k8s/api';
 import { KubeWorkload } from '../../lib/k8s/cluster';
+import CronJob from '../../lib/k8s/cronJob';
+import DaemonSet from '../../lib/k8s/daemonSet';
+import Deployment from '../../lib/k8s/deployment';
+import Job from '../../lib/k8s/job';
+import ReplicaSet from '../../lib/k8s/replicaSet';
+import StatefulSet from '../../lib/k8s/statefulSet';
 import { getReadyReplicas, getTotalReplicas, timeAgo, useFilterFunc } from '../../lib/util';
 import { PageGrid, ResourceLink } from '../common/Resource';
 import { SectionBox } from '../common/SectionBox';
@@ -19,6 +24,7 @@ export default function Overview() {
 
   function setWorkloads(workloads: KubeWorkloadDict,
                         {items, kind}: {items: KubeWorkload[]; kind: string}) {
+    console.log(':::::', workloads, items, kind)
     const data = {...workloads};
     data[kind] = items;
 
@@ -37,14 +43,13 @@ export default function Overview() {
     return joint;
   }
 
-  useConnectApi(
-    api.daemonSet.list.bind(null, null, (items: KubeWorkload[]) => dispatch({items, kind: 'DaemonSet'})),
-    api.deployment.list.bind(null, null, (items: KubeWorkload[]) => dispatch({items, kind: 'Deployment'})),
-    api.job.list.bind(null, null, (items: KubeWorkload[]) => dispatch({items, kind: 'Job'})),
-    api.cronJob.list.bind(null, null, (items: KubeWorkload[]) => dispatch({items, kind: 'CronJob'})),
-    api.replicaSet.list.bind(null, null, (items: KubeWorkload[]) => dispatch({items, kind: 'ReplicaSet'})),
-    api.statefulSet.list.bind(null, null, (items: KubeWorkload[]) => dispatch({items, kind: 'StatefulSet'})),
-  );
+  DaemonSet.useApiList((items: DaemonSet[]) => dispatch({items, kind: 'DaemonSet'}));
+  Deployment.useApiList((items: Deployment[]) => dispatch({items, kind: 'Deployment'}));
+  Job.useApiList((items: Job[]) => dispatch({items, kind: 'Job'}));
+  CronJob.useApiList((items: CronJob[]) => dispatch({items, kind: 'CronJob'}));
+  ReplicaSet.useApiList((items: ReplicaSet[]) => dispatch({items, kind: 'ReplicaSet'}));
+  StatefulSet.useApiList((items: StatefulSet[]) => dispatch({items, kind: 'StatefulSet'}));
+
 
   // @todo: Abstract the kind, title/name, and API methods into classes,
   // then simplify this.
@@ -124,7 +129,7 @@ export default function Overview() {
             },
             {
               label: 'Pods',
-              getter: (item) => getPods(item)
+              getter: (item) => item && getPods(item)
             },
             {
               label: 'Age',

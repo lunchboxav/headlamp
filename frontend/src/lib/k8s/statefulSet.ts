@@ -20,6 +20,10 @@ class StatefulSet extends makeKubeObject<KubeStatefulSet>('StatefulSet') {
   get spec() {
     return this.jsonData!.spec;
   }
+
+  get status() {
+    return this.jsonData!.status;
+  }
 }
 
 export default StatefulSet;

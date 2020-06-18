@@ -91,6 +91,7 @@ export function makeKubeObject<T extends KubeObjectInterface>(detailsRouteName: 
 
     static useApiList<U extends KubeObject>(onList: (...arg: any[]) => any) {
       const listCallback = onList as (arg: U[]) => void;
+      console.log('>>>', this.apiEndpoint)
       useConnectApi(this.apiList(listCallback))
     }
 

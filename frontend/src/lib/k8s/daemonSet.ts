@@ -20,6 +20,10 @@ class DaemonSet extends makeKubeObject<KubeDaemonSet>('DaemonSet') {
   get spec() {
     return this.jsonData!.spec;
   }
+
+  get status() {
+    return this.jsonData!.status;
+  }
 }
 
 export default DaemonSet;
