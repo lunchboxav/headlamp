@@ -214,7 +214,7 @@ export const ROUTES: {
     sidebar: 'replicaSets',
     component: () => <ReplicaSetList />
   },
-  ReplicaSet: {
+  replicaSet: {
     path: '/replicasets/:namespace/:name',
     exact: true,
     sidebar: 'replicaSets',
