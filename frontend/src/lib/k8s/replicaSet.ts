@@ -18,7 +18,7 @@ export interface KubeReplicaSet extends KubeObjectInterface {
   };
 }
 
-class ReplicaSet extends makeKubeObject<KubeReplicaSet>('replicaSet') {
+class ReplicaSet extends makeKubeObject<KubeReplicaSet>('ReplicaSet') {
   static apiEndpoint = apiFactoryWithNamespace('apps', 'v1', 'replicasets', true);
 
   get spec() {
