@@ -84,6 +84,7 @@ export function apiFactory(group: string, version: string, resource: string) {
     post: (body: KubeObjectInterface) => post(url, body),
     put: (body: KubeObjectInterface) => put(`${url}/${body.metadata.name}`, body),
     delete: (name: string) => remove(`${url}/${name}`),
+    isNamespaced: false,
   };
 }
 
@@ -105,6 +106,7 @@ export function apiFactoryWithNamespace(group: string, version: string, resource
     post: (body: KubeObjectInterface) => post(url(body.metadata.namespace as string), body),
     put: (body: KubeObjectInterface) => put(`${url(body.metadata.namespace as string)}/${body.metadata.name}`, body),
     delete: (namespace: string, name: string) => remove(`${url(namespace)}/${name}`),
+    isNamespaced: true,
   };
 
   if (includeScale) {

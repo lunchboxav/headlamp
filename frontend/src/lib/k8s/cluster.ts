@@ -77,8 +77,14 @@ export function makeKubeObject<T extends KubeObjectInterface>(detailsRouteName: 
 
     static apiList<U extends KubeObject>(onList: (arg: U[]) => void) {
       const createInstance = (item: T) => this.create(item) as U;
-      return this.apiEndpoint.list.bind(null, null,
-        (list: T[]) => onList(list.map((item: T) => createInstance(item) as U)));
+
+      let args: any[] = [(list: T[]) => onList(list.map((item: T) => createInstance(item) as U))];
+
+      if (this.apiEndpoint.isNamespaced) {
+        args.unshift(null);
+      }
+
+      return this.apiEndpoint.list.bind(null, ...args);
     }
 
     static useApiList<U extends KubeObject>(onList: (...arg: any[]) => any) {
@@ -94,7 +100,7 @@ export function makeKubeObject<T extends KubeObjectInterface>(detailsRouteName: 
       const createInstance = (item: T) => this.create(item) as U;
       let args: any[] = [name, (obj: T) => onGet(createInstance(obj))];
 
-      if (!!namespace) {
+      if (this.apiEndpoint.isNamespaced) {
         args.unshift(namespace);
       }
 
