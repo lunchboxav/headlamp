@@ -289,17 +289,6 @@ export interface KubeStatefulSet extends KubeObjectInterface {
   };
 }
 
-export interface KubeSecretAccount extends KubeObjectInterface {
-  secrets: {
-    apiVersion: string;
-    fieldPath: string;
-    kind: string;
-    name: string;
-    namespace: string;
-    uid: string;
-  }[];
-}
-
 export type KubeWorkload = KubeReplicaSet | KubeStatefulSet | (KubeObjectInterface & {
   spec: {
     selector?: LabelSelector;
