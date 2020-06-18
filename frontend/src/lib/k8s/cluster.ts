@@ -222,23 +222,6 @@ export interface KubeConfigMap extends KubeObjectInterface {
   data: StringDict;
 }
 
-export interface KubeIngress extends KubeObjectInterface {
-  spec: {
-    rules: {
-      host: string;
-      http: {
-        paths: {
-          path: string;
-          backend: {
-            serviceName: string;
-            servicePort: string;
-          };
-        }[];
-      };
-    }[];
-  };
-}
-
 export interface LabelSelector {
   matchExpressions?: {
     key: string;
