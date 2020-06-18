@@ -2,9 +2,9 @@ import Link from '@material-ui/core/Link';
 import { makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import api, { useConnectApi } from '../../lib/k8s/api';
 import { apiFactory, apiFactoryWithNamespace } from '../../lib/k8s/apiProxy';
 import { KubeCRD } from '../../lib/k8s/cluster';
+import CRD from '../../lib/k8s/crd';
 import { timeAgo } from '../../lib/util';
 import { ViewDialog } from '../common/EditorDialog';
 import Loader from '../common/Loader';
@@ -32,13 +32,11 @@ const useStyle = makeStyles({
 export default function CustomResourceDefinitionDetails() {
   const classes = useStyle();
   const { name } = useParams();
-  const [item, setItem] = React.useState<KubeCRD | null>(null);
+  const [item, setItem] = React.useState<CRD | null>(null);
   const [objToShow, setObjToShow] = React.useState<KubeCRD | null>(null);
   const [objects, setObjects] = React.useState<KubeCRD[]>([]);
 
-  useConnectApi(
-    api.crd.get.bind(null, name, setItem),
-  );
+  CRD.useApiGet(setItem, name);
 
   React.useEffect(() => {
     let promise: Promise<any> | null = null;
