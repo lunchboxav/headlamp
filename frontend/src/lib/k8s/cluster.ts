@@ -301,17 +301,3 @@ export interface KubeCRD extends KubeObjectInterface {
     [other: string]: any;
   };
 }
-
-export interface KubePersistentVolume extends KubeObjectInterface {
-  spec: {
-    capacity: {
-      storage: string;
-    };
-    [other: string]: any;
-  };
-  status: {
-    message: string;
-    phase: string;
-    reason: string;
-  };
-}
