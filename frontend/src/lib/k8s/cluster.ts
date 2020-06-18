@@ -233,12 +233,6 @@ export interface LabelSelector {
   };
 }
 
-export interface KubeNamespace extends KubeObjectInterface {
-  status: {
-    phase: string;
-  };
-}
-
 export interface KubeNode extends KubeObjectInterface {
   status: {
     addresses: {
