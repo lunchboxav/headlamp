@@ -338,9 +338,3 @@ export interface KubePersistentVolumeClaim extends KubeObjectInterface {
     phase: string;
   };
 }
-
-export interface KubeStorageClass extends KubeObjectInterface {
-  provisioner: string;
-  reclaimPolicy: string;
-  volumeBindingMode: string;
-}
